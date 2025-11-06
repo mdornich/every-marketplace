@@ -1,7 +1,7 @@
 {
   "name": "compounding-engineering",
   "version": "1.0.0",
-  "description": "AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last. Includes 15 specialized agents and 6 commands.",
+  "description": "AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last. Includes 17 specialized agents and 6 commands.",
   "author": {
     "name": "Kieran Klaassen",
     "email": "kieran@every.to",
@@ -17,5 +17,119 @@
     "code-review",
     "quality",
     "knowledge-management"
-  ]
+  ],
+  "components": {
+    "agents": 17,
+    "commands": 6,
+    "hooks": 0
+  },
+  "agents": {
+    "code-review": [
+      {
+        "name": "kieran-rails-reviewer",
+        "description": "Super senior Rails code reviewer with Kieran's strict conventions and exceptional quality standards",
+        "use_cases": ["rails-code-review", "turbo-streams-validation", "controller-optimization", "service-extraction"]
+      },
+      {
+        "name": "kieran-typescript-reviewer",
+        "description": "Super senior TypeScript code reviewer with Kieran's strict type safety and quality standards",
+        "use_cases": ["typescript-code-review", "type-safety-validation", "react-component-review", "modern-patterns"]
+      },
+      {
+        "name": "kieran-python-reviewer",
+        "description": "Super senior Python code reviewer with Kieran's strict conventions and quality standards",
+        "use_cases": ["python-code-review", "fastapi-review", "sqlalchemy-optimization", "async-patterns"]
+      },
+      {
+        "name": "dhh-rails-reviewer",
+        "description": "Brutally honest Rails code review from DHH's perspective, identifying anti-patterns and JavaScript framework contamination",
+        "use_cases": ["rails-philosophy-check", "complexity-analysis", "convention-adherence", "monolith-validation"]
+      },
+      {
+        "name": "code-simplicity-reviewer",
+        "description": "Reviews code for unnecessary complexity and suggests simplifications",
+        "use_cases": ["simplification", "refactoring", "complexity-reduction", "readability-improvement"]
+      }
+    ],
+    "architecture-and-quality": [
+      {
+        "name": "architecture-strategist",
+        "description": "System architecture expert analyzing code changes, design decisions, and architectural compliance",
+        "use_cases": ["architecture-review", "design-patterns", "system-integration", "component-boundaries"]
+      },
+      {
+        "name": "security-sentinel",
+        "description": "Elite security specialist performing comprehensive vulnerability assessments and OWASP compliance checks",
+        "use_cases": ["security-audit", "vulnerability-scanning", "penetration-testing", "owasp-compliance"]
+      },
+      {
+        "name": "performance-oracle",
+        "description": "Elite performance optimization expert identifying bottlenecks and ensuring scalability",
+        "use_cases": ["performance-analysis", "bottleneck-detection", "optimization", "scalability-review"]
+      },
+      {
+        "name": "data-integrity-guardian",
+        "description": "Data integrity specialist ensuring database consistency and transaction safety",
+        "use_cases": ["data-validation", "transaction-boundaries", "database-integrity", "race-condition-detection"]
+      }
+    ],
+    "research-and-knowledge": [
+      {
+        "name": "best-practices-researcher",
+        "description": "Expert technology researcher discovering and synthesizing best practices from authoritative sources",
+        "use_cases": ["best-practices", "documentation-research", "technology-standards", "community-conventions"]
+      },
+      {
+        "name": "framework-docs-researcher",
+        "description": "Framework documentation specialist researching official docs and implementation patterns",
+        "use_cases": ["framework-documentation", "api-research", "implementation-guidance", "version-compatibility"]
+      },
+      {
+        "name": "repo-research-analyst",
+        "description": "Repository research analyst examining structure, documentation, and project conventions",
+        "use_cases": ["codebase-analysis", "pattern-discovery", "convention-research", "project-structure"]
+      },
+      {
+        "name": "feedback-codifier",
+        "description": "Feedback analyst codifying review patterns to improve existing reviewer agents",
+        "use_cases": ["feedback-analysis", "pattern-extraction", "guideline-formulation", "knowledge-capture"]
+      }
+    ],
+    "specialized-analysis": [
+      {
+        "name": "pattern-recognition-specialist",
+        "description": "Pattern recognition expert identifying recurring themes and anti-patterns across codebases",
+        "use_cases": ["pattern-detection", "anti-pattern-identification", "code-smell-detection", "consistency-analysis"]
+      },
+      {
+        "name": "git-history-analyzer",
+        "description": "Git history expert analyzing commit patterns, code evolution, and change impact",
+        "use_cases": ["git-analysis", "commit-history", "change-impact", "code-evolution"]
+      },
+      {
+        "name": "pr-comment-resolver",
+        "description": "PR comment specialist systematically resolving review feedback and implementing changes",
+        "use_cases": ["comment-resolution", "feedback-implementation", "pr-updates", "review-response"]
+      }
+    ],
+    "content-and-style": [
+      {
+        "name": "every-style-editor",
+        "description": "Expert copy editor ensuring compliance with Every's specific editorial standards and house style",
+        "use_cases": ["content-editing", "style-compliance", "copy-review", "editorial-standards"]
+      }
+    ]
+  },
+  "commands": {
+    "workflow": [
+      "review",
+      "plan",
+      "work",
+      "triage"
+    ],
+    "productivity": [
+      "resolve_todo_parallel",
+      "generate_command"
+    ]
+  }
 }

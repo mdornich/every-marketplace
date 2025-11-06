@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "compounding-engineering",
-      "description": "AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last. Includes 15 specialized agents and 6 commands.",
+      "description": "AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last. Includes 17 specialized agents and 6 commands.",
       "version": "1.0.0",
       "author": {
         "name": "Kieran Klaassen",
