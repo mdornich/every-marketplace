@@ -4,7 +4,7 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 ## Components
 
-- **29 Agents** - Specialized AI agents for code review, research, and analysis
+- **32 Agents** - Specialized AI agents for code review, research, and analysis
 - **7 Commands** - Slash commands for common workflows
 - **1 Skill** - Image generation with Gemini API
 
@@ -25,6 +25,9 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 - **sql-pro** - SQL queries, schema design, PostgreSQL features
 - **pgvector-embeddings-expert** - Vector search, RAG, embeddings with PGVector
 - **data-integrity-guardian** - Database migrations and data integrity
+- **migration-chain-validator** - Alembic migration chain integrity (PR #207 lesson)
+- **e2e-database-validator** - E2E schema testing against real database (PR #207 lesson)
+- **test-infrastructure-auditor** - Test environment and fixture validation (PR #207 lesson)
 
 ### Deployment (Coolify/Docker)
 - **coolify-deployment-expert** - Coolify-specific deployment patterns

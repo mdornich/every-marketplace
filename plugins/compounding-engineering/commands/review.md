@@ -131,6 +131,9 @@ IF database files changed:
   ✓ database-optimizer
   ✓ sql-pro
   ✓ supabase-specialist
+  ✓ migration-chain-validator
+  ✓ e2e-database-validator
+  ✓ test-infrastructure-auditor
 
 IF deployment files changed:
   ✓ coolify-deployment-expert
@@ -203,6 +206,9 @@ Run selected agents in parallel for maximum efficiency.
 - Task database-optimizer: "Review query performance, indexing, schema design"
 - Task sql-pro: "Review SQL queries, migrations, PostgreSQL best practices"
 - Task data-integrity-guardian: "Review data integrity, constraints, migration safety"
+- Task migration-chain-validator: "Validate Alembic migration chain integrity - check for broken parent revisions"
+- Task e2e-database-validator: "E2E validation against real database - catch CircularDependencyError and cascade issues"
+- Task test-infrastructure-auditor: "Audit test infrastructure - verify fixtures match models, pytest available"
 
 **AI/Vector Agents** (if ai-vectors category detected):
 - Task pgvector-embeddings-expert: "Review vector search, embeddings, RAG patterns"
