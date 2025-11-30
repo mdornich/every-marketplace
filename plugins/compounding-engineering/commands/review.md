@@ -79,44 +79,152 @@ Based on detection, set appropriate reviewers for parallel execution.
 
 </project_type_detection>
 
+### 2. PR-Aware Agent Selection (SMART MODE)
+
+<critical_requirement>Analyze changed files BEFORE selecting agents. Only run agents relevant to the actual changes.</critical_requirement>
+
+#### Step 1: Get Changed Files
+
+```bash
+# Get list of changed files from PR
+gh pr view $PR_NUMBER --json files --jq '.files[].path'
+```
+
+#### Step 2: Categorize Changed Files
+
+<file_categorization>
+
+Analyze each changed file and assign to categories:
+
+| Pattern | Category | Example Files |
+|---------|----------|---------------|
+| `*.tsx`, `*.ts`, `app/**`, `components/**`, `pages/**` | **frontend** | `app/page.tsx`, `components/Button.tsx` |
+| `*.py`, `backend/**`, `app/api/**` (Python) | **backend** | `backend/app/main.py`, `app/routers/users.py` |
+| `*.sql`, `migrations/**`, `alembic/**`, `**/models/**` | **database** | `alembic/versions/*.py`, `app/db/models.py` |
+| `Dockerfile*`, `docker-compose*`, `.github/**`, `*.yml` (CI) | **deployment** | `Dockerfile`, `.github/workflows/ci.yml` |
+| `package.json`, `requirements.txt`, `*.lock` | **dependencies** | `package.json`, `poetry.lock` |
+| `*test*`, `*spec*`, `__tests__/**` | **tests** | `tests/test_api.py`, `__tests__/Button.test.tsx` |
+| `*.md`, `docs/**` | **docs** | `README.md`, `docs/api.md` |
+| `*.env*`, `*config*` | **config** | `.env.example`, `next.config.js` |
+| `*embedding*`, `*vector*`, `*rag*` | **ai-vectors** | `app/services/embeddings.py` |
+
+</file_categorization>
+
+#### Step 3: Map Categories to Agents
+
+<agent_selection_rules>
+
+Based on file categories detected, select agents:
+
+```
+IF frontend files changed:
+  ✓ kieran-typescript-reviewer
+  ✓ frontend-developer
+  ✓ typescript-pro
+
+IF backend files changed:
+  ✓ kieran-python-reviewer
+  ✓ fastapi-pro
+
+IF database files changed:
+  ✓ data-integrity-guardian
+  ✓ database-optimizer
+  ✓ sql-pro
+  ✓ supabase-specialist
+
+IF deployment files changed:
+  ✓ coolify-deployment-expert
+  ✓ deployment-engineer
+  ✓ devops-harmony-analyst
+
+IF dependencies files changed:
+  ✓ dependency-detective
+
+IF ai-vectors files changed:
+  ✓ pgvector-embeddings-expert
+
+ALWAYS RUN (core reviewers):
+  ✓ security-sentinel
+  ✓ architecture-strategist
+  ✓ code-simplicity-reviewer
+```
+
+</agent_selection_rules>
+
+#### Step 4: Display Selection Summary
+
+Before running agents, show:
+
+```markdown
+## Agent Selection Summary
+
+**PR:** #$PR_NUMBER
+**Changed Files:** X files
+
+### Categories Detected:
+- ✓ frontend (5 files)
+- ✓ backend (3 files)
+- ✗ database (0 files)
+- ✓ deployment (1 file)
+
+### Agents Selected (8 of 20):
+**Frontend:** kieran-typescript-reviewer, frontend-developer, typescript-pro
+**Backend:** kieran-python-reviewer, fastapi-pro
+**Deployment:** coolify-deployment-expert
+**Core:** security-sentinel, architecture-strategist, code-simplicity-reviewer
+
+### Agents Skipped (12):
+database-optimizer, sql-pro, supabase-specialist, pgvector-embeddings-expert,
+data-integrity-guardian, dependency-detective, ... (no relevant files changed)
+
+Proceed with review? (yes/no/all-agents)
+```
+
+If user says "all-agents", run the full agent suite regardless of file changes.
+
 #### Parallel Agents to review the PR:
 
 <parallel_tasks>
 
-Run ALL or most of these agents at the same time, adjusting language-specific reviewers based on project type:
+**IMPORTANT:** Only run agents selected in Step 3 above based on changed files.
+Run selected agents in parallel for maximum efficiency.
 
-**Language-Specific Reviewers (choose based on project type)**:
+**Frontend Agents** (if frontend category detected):
+- Task kieran-typescript-reviewer: "Review TypeScript code quality, patterns, and conventions"
+- Task frontend-developer: "Review Next.js patterns, React best practices, component architecture"
+- Task typescript-pro: "Review type safety, generics, advanced TypeScript patterns"
 
-For Next.js/TypeScript projects:
-1. Task kieran-typescript-reviewer(PR content)
-2. Task frontend-developer(PR content)
-3. Task typescript-pro(PR content)
+**Backend Agents** (if backend category detected):
+- Task kieran-python-reviewer: "Review Python code quality, patterns, and conventions"
+- Task fastapi-pro: "Review FastAPI patterns, async code, Pydantic models, API design"
 
-For FastAPI/Python projects:
-1. Task kieran-python-reviewer(PR content)
-2. Task fastapi-pro(PR content)
+**Database Agents** (if database category detected):
+- Task supabase-specialist: "Review Supabase patterns, RLS policies, auth integration"
+- Task database-optimizer: "Review query performance, indexing, schema design"
+- Task sql-pro: "Review SQL queries, migrations, PostgreSQL best practices"
+- Task data-integrity-guardian: "Review data integrity, constraints, migration safety"
 
-For Supabase/Database:
-1. Task supabase-specialist(PR content)
-2. Task database-optimizer(PR content)
-3. Task sql-pro(PR content)
-4. Task pgvector-embeddings-expert(PR content) - if vector/embeddings code
+**AI/Vector Agents** (if ai-vectors category detected):
+- Task pgvector-embeddings-expert: "Review vector search, embeddings, RAG patterns"
 
-For Deployment/DevOps:
-1. Task coolify-deployment-expert(PR content) - if Dockerfile/docker-compose changes
-2. Task deployment-engineer(PR content)
+**Deployment Agents** (if deployment category detected):
+- Task coolify-deployment-expert: "Review Dockerfile, docker-compose, Coolify patterns"
+- Task deployment-engineer: "Review CI/CD, deployment pipelines, infrastructure code"
+- Task devops-harmony-analyst: "Review DevOps patterns, GitHub Actions, containerization"
 
-**Universal Reviewers (run for all project types)**:
-1. Task git-history-analyzer(PR content)
-2. Task dependency-detective(PR content)
-3. Task pattern-recognition-specialist(PR content)
-4. Task architecture-strategist(PR content)
-5. Task code-philosopher(PR content)
-6. Task security-sentinel(PR content)
-7. Task performance-oracle(PR content)
-8. Task devops-harmony-analyst(PR content)
-9. Task data-integrity-guardian(PR content)
-10. Task code-simplicity-reviewer(PR content)
+**Dependency Agents** (if dependencies category detected):
+- Task dependency-detective: "Review dependency versions, conflicts, security vulnerabilities"
+
+**Core Agents** (ALWAYS RUN):
+- Task security-sentinel: "Security audit - vulnerabilities, input validation, auth"
+- Task architecture-strategist: "Architecture review - patterns, boundaries, design decisions"
+- Task code-simplicity-reviewer: "Final pass for simplicity, unnecessary complexity, YAGNI"
+
+**Optional Agents** (run if time/budget allows):
+- Task git-history-analyzer: "Analyze code evolution and historical context"
+- Task pattern-recognition-specialist: "Identify patterns and anti-patterns"
+- Task code-philosopher: "Deep reasoning about design trade-offs"
+- Task performance-oracle: "Performance analysis and optimization opportunities"
 
 </parallel_tasks>
 
