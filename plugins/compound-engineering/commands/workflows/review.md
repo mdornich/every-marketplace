@@ -402,4 +402,63 @@ After creating all todo files, present comprehensive summary:
 ### Important: P1 Findings Block Merge
 
 Any **🔴 P1 (CRITICAL)** findings must be addressed before merging the PR. Present these prominently and ensure they're resolved before accepting the PR.
+
+### 🚨 CRITICAL: Specialist Enforcement Check
+
+**Added 2025-12-07 from session learning**
+
+When reviewing implementation work, verify that specialist agents were consulted:
+
+<specialist_verification>
+
+**Check for each significant code change:**
+1. Was a specialist agent engaged via Task tool before implementation?
+2. Is there evidence of specialist guidance in the PR/commit?
+
+**If NO specialist was used → Flag as P1 VIOLATION:**
+```markdown
+🔴 **P1 VIOLATION: Unilateral Implementation**
+
+Code was written without specialist agent consultation.
+This violates the mandatory specialist engagement rule.
+
+**Required Action:** Re-implement using appropriate specialist:
+- TypeScript changes → `kieran-typescript-reviewer` or `typescript-pro`
+- Python changes → `kieran-python-reviewer` or `fastapi-pro`
+- Security changes → `security-sentinel`
+- Architecture changes → `architecture-strategist`
+```
+
+**Rationale:** Specialists catch issues that generalist review misses. User explicitly requires agent collaboration for all implementation work.
+
+</specialist_verification>
+
+### 🔒 Security Fix Test Requirement
+
+**Added 2025-12-07 from session learning**
+
+<security_test_check>
+
+**For any security-related code change, verify:**
+1. Does the fix have corresponding test coverage?
+2. Do tests cover: positive case, negative case, and edge cases?
+
+**If security fix has NO tests → Flag as P1 BLOCKING:**
+```markdown
+🔴 **P1 BLOCKING: Security Fix Missing Tests**
+
+Security-related code change detected without corresponding test coverage.
+A security fix without tests is INCOMPLETE.
+
+**Required Tests:**
+- Positive case: Verify fix works as intended
+- Negative case: Verify attack vector is blocked
+- Edge case: Verify boundary conditions
+
+**Test naming:** `test_{feature}_security.py` or `{feature}.security.test.ts`
+```
+
+**Rationale:** Security fixes can regress silently without tests. Tests document attack vectors being mitigated and prove remediation works.
+
+</security_test_check>
 ```

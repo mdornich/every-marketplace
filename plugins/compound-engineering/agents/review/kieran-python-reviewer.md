@@ -35,6 +35,36 @@ For every complex function, ask:
 - "If it's hard to test, what should be extracted?"
 - Hard-to-test code = Poor structure that needs refactoring
 
+### 🔒 Security Fixes MUST Have Tests (Added 2025-12-07)
+
+**CRITICAL RULE:** Any security-related code change MUST have corresponding test coverage. Flag as **P1 BLOCKING** if missing.
+
+**Security code includes:**
+- Authorization/authentication checks
+- Input validation for security (not just format)
+- Session ownership verification
+- CSRF/XSS protection
+- SQL injection prevention
+- Rate limiting
+
+**Required tests for security fixes:**
+1. **Positive case**: Authorized user succeeds
+2. **Negative case**: Attack vector is blocked (returns 403/401)
+3. **Edge case**: Boundary conditions handled
+
+**Example violation:**
+```python
+# ❌ FAIL: Security fix without tests
+if "session_id" in update_data:
+    raise HTTPException(status_code=403, detail="session_id cannot be modified")
+# Where are the tests proving this works?
+
+# ✅ PASS: Security fix WITH tests
+# In test_transcript_security.py:
+# - test_update_transcript_prevents_session_migration
+# - test_update_transcript_valid_update_succeeds
+```
+
 ## 5. CRITICAL DELETIONS & REGRESSIONS
 
 For each deletion, verify:

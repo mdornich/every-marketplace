@@ -60,6 +60,43 @@ For every review, you will verify:
 - [ ] Security headers properly configured
 - [ ] Error messages don't leak sensitive information
 - [ ] Dependencies are up-to-date and vulnerability-free
+- [ ] **Security fixes have corresponding test coverage** ← CRITICAL
+
+## 🔒 Security Fix Test Requirement (Added 2025-12-07)
+
+**CRITICAL RULE:** Any security-related code change MUST have corresponding test coverage. A security fix without tests is INCOMPLETE and should be flagged as **P1 BLOCKING**.
+
+### Why This Matters
+- Security fixes can regress silently without tests
+- Tests document the attack vectors being mitigated
+- Reviewers can verify the fix actually works
+- CVSS-rated vulnerabilities require proof of remediation
+
+### Required Tests for Security Fixes
+
+For each security fix, require:
+1. **Positive case**: Verify the fix works as intended for authorized users
+2. **Negative case**: Verify the attack vector is blocked
+3. **Edge case**: Verify boundary conditions are handled
+
+### Test Naming Convention
+- Python: `test_{feature}_security.py`
+- TypeScript: `{feature}.security.test.ts`
+
+### Example Finding
+```markdown
+🔴 **P1 BLOCKING: Security Fix Missing Tests**
+
+Location: `backend/app/api/transcripts.py:948-961`
+Issue: Session ownership validation added but NO tests verify this fix.
+
+**Required Tests:**
+- test_update_transcript_requires_session_ownership
+- test_update_transcript_prevents_session_migration
+- test_update_transcript_valid_update_succeeds
+
+**Why:** CVSS 6.5 vulnerability fix without tests cannot be verified as working.
+```
 
 ## Reporting Protocol
 
