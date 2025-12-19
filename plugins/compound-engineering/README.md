@@ -6,22 +6,25 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
-| Agents | 24 |
+| Agents | 27 |
 | Commands | 19 |
-| Skills | 11 |
+| Skills | 13 |
 | MCP Servers | 2 |
 
 ## Agents
 
 Agents are organized into categories for easier discovery.
 
-### Review (11)
+### Review (14)
 
 | Agent | Description |
 |-------|-------------|
+| `agent-native-reviewer` | Verify features are agent-native (action + context parity) |
 | `architecture-strategist` | Analyze architectural decisions and compliance |
 | `code-simplicity-reviewer` | Final pass for simplicity and minimalism |
 | `data-integrity-guardian` | Database migrations and data integrity |
+| `data-migration-expert` | Validate ID mappings match production, check for swapped values |
+| `deployment-verification-agent` | Create Go/No-Go deployment checklists for risky data changes |
 | `dhh-rails-reviewer` | Rails review from DHH's perspective |
 | `kieran-rails-reviewer` | Rails code review with strict conventions |
 | `kieran-python-reviewer` | Python code review with strict conventions |
@@ -68,14 +71,14 @@ Agents are organized into categories for easier discovery.
 
 ### Workflow Commands
 
-Core workflow commands (use the short form for autocomplete):
+Core workflow commands use `workflows:` prefix to avoid collisions with built-in commands:
 
 | Command | Description |
 |---------|-------------|
-| `/plan` | Create implementation plans |
-| `/review` | Run comprehensive code reviews |
-| `/work` | Execute work items systematically |
-| `/compound` | Document solved problems to compound team knowledge |
+| `/workflows:plan` | Create implementation plans |
+| `/workflows:review` | Run comprehensive code reviews |
+| `/workflows:work` | Execute work items systematically |
+| `/workflows:compound` | Document solved problems to compound team knowledge |
 
 ### Utility Commands
 
@@ -86,15 +89,22 @@ Core workflow commands (use the short form for autocomplete):
 | `/generate_command` | Generate new slash commands |
 | `/heal-skill` | Fix skill documentation issues |
 | `/plan_review` | Multi-agent plan review in parallel |
-| `/prime` | Prime/setup command |
-| `/report-bug` | Report a bug in the compound-engineering plugin |
+| `/report-bug` | Report a bug in the plugin |
 | `/reproduce-bug` | Reproduce bugs using logs and console |
 | `/resolve_parallel` | Resolve TODO comments in parallel |
 | `/resolve_pr_parallel` | Resolve PR comments in parallel |
 | `/resolve_todo_parallel` | Resolve todos in parallel |
 | `/triage` | Triage and prioritize issues |
+| `/playwright-test` | Run browser tests on PR-affected pages |
+| `/xcode-test` | Build and test iOS apps on simulator |
 
 ## Skills
+
+### Architecture & Design
+
+| Skill | Description |
+|-------|-------------|
+| `agent-native-architecture` | Build AI agents using prompt-native architecture |
 
 ### Development Tools
 

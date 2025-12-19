@@ -5,6 +5,96 @@ All notable changes to the compound-engineering plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.1] - 2025-12-18
+
+### Changed
+
+- **`/workflows:review` command** - Section 7 now detects project type (Web, iOS, or Hybrid) and offers appropriate testing. Web projects get `/playwright-test`, iOS projects get `/xcode-test`, hybrid projects can run both.
+
+## [2.15.0] - 2025-12-18
+
+### Added
+
+- **`/xcode-test` command** - Build and test iOS apps on simulator using XcodeBuildMCP. Discovers projects/schemes, builds for simulator, installs and launches apps, takes screenshots, captures console logs, and supports human verification for Sign in with Apple, push notifications, and in-app purchases. Checks for XcodeBuildMCP installation first.
+
+## [2.14.0] - 2025-12-18
+
+### Added
+
+- **`/playwright-test` command** - Run end-to-end browser tests on pages affected by a PR or branch. Uses Playwright MCP to navigate pages, capture snapshots, check console errors, test interactions, and pause for human verification on OAuth/email/payment flows. Creates P1 todos for failures and retries until passing.
+
+### Changed
+
+- **`/workflows:review` command** - Added optional Playwright testing phase (Section 7). After review agents complete, offers to spawn `/playwright-test` as a subagent to verify affected pages in a real browser.
+
+## [2.13.0] - 2025-12-15
+
+### Added
+
+- **`dhh-rails-style` skill** - Write Ruby and Rails code in DHH's distinctive 37signals style. Router-pattern skill with sectioned references for controllers, models, frontend, architecture, and gems. Embodies REST purity, fat models, thin controllers, Current attributes, Hotwire patterns, and the "clarity over cleverness" philosophy. Based on analysis of Fizzy (Campfire) codebase.
+
+## [2.12.0] - 2025-12-15
+
+### Added
+
+- **`data-migration-expert` agent** - New review agent for validating database migrations and data backfills. Ensures ID mappings match production reality, checks for swapped values, verifies rollback safety, and provides SQL verification snippets. Prevents silent data corruption from mismatched enum/ID mappings.
+- **`deployment-verification-agent` agent** - New review agent that produces Go/No-Go deployment checklists for risky data changes. Creates pre/post-deploy SQL verification queries, defines data invariants, documents rollback procedures, and plans post-deploy monitoring.
+
+### Changed
+
+- **`/workflows:review` command** - Added conditional agents section. Now automatically runs `data-migration-expert` and `deployment-verification-agent` when PR contains database migrations (`db/migrate/*.rb`), data backfills, or ID/enum mapping changes.
+
+## [2.11.0] - 2025-12-10
+
+### Changed
+
+- **Command naming convention** - Workflow commands now use `workflows:` prefix to avoid collisions with built-in Claude Code commands:
+  - `/workflows:plan` (was `/plan`)
+  - `/workflows:review` (was `/review`)
+  - `/workflows:work` (was `/work`)
+  - `/workflows:compound` (was `/compound`)
+
+  This ensures no collision with Claude Code's built-in `/plan` command.
+
+### Fixed
+
+- **`heal-skill.md`** - Added missing `name:` frontmatter field
+- **`create-agent-skill.md`** - Added missing `name:` frontmatter field
+- **`prime.md`** - Rewrote corrupted command file (was incorrectly containing CLAUDE.md content)
+- **Playwright MCP alias** - Shortened from `playwright` to `pw` to stay under 64-char API limit
+
+### Removed
+
+- **`prime.md`** - Removed from plugin (personal setup command, not for distribution)
+- **`codify.md`** - Removed deprecated command (replaced by `/compound`)
+
+## [2.10.0] - 2025-12-10
+
+### Added
+
+- **`agent-native-reviewer` agent** - New review agent that verifies features are agent-native. Checks that any action a user can take, an agent can also take (Action Parity), and anything a user can see, an agent can see (Context Parity). Enforces the principle: "Whatever the user can do, the agent can do."
+- **`agent-native-architecture` skill** - Build AI agents using prompt-native architecture where features are defined in prompts, not code. Includes patterns for MCP tool design, system prompts, self-modification, and refactoring to prompt-native.
+
+### Changed
+
+- **`/review` command** - Added `agent-native-reviewer` to the parallel review agents. Code reviews now automatically check if new features are accessible to agents.
+
+### Fixed
+
+- **Documentation** - Fixed mermaid diagram legibility in dark mode by changing stroke color to white (PR #45 by @rickmanelius)
+
+## [2.9.4] - 2025-12-08
+
+### Changed
+
+- **`/work` command** - Improved screenshot documentation for PR creation. Made capturing screenshots REQUIRED for any UI changes. Updated to use `imgup` skill with `pixhost` as default host (no API key needed). Clarified what to capture: new screens, before/after for modifications, and Figma design matches.
+
+## [2.9.3] - 2025-12-05
+
+### Changed
+
+- **`/plan` command** - Added "Open plan in editor" as the first option in post-generation menu. This opens the plan file in the user's default editor for review before deciding on next steps.
+
 ## [2.9.2] - 2025-12-04
 
 ### Added

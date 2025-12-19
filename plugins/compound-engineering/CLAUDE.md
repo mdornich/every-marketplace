@@ -35,12 +35,22 @@ agents/
 └── docs/       # Documentation agents
 
 commands/
-├── workflows/  # Core workflow commands (/plan, /review, /work, /compound)
+├── workflows/  # Core workflow commands (workflows:plan, workflows:review, etc.)
 └── *.md        # Utility commands
 
 skills/
 └── *.md        # All skills at root level
 ```
+
+## Command Naming Convention
+
+**Workflow commands** use `workflows:` prefix to avoid collisions with built-in commands:
+- `/workflows:plan` - Create implementation plans
+- `/workflows:review` - Run comprehensive code reviews
+- `/workflows:work` - Execute work items systematically
+- `/workflows:compound` - Document solved problems
+
+**Why `workflows:`?** Claude Code has built-in `/plan` and `/review` commands. Using `name: workflows:plan` in frontmatter creates a unique `/workflows:plan` command with no collision.
 
 ## Documentation
 

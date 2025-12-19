@@ -1,5 +1,5 @@
 ---
-name: review
+name: workflows:review
 description: Perform exhaustive code reviews using multi-agent analysis, ultra-thinking, and worktrees
 argument-hint: "[PR number, GitHub URL, branch name, or latest]"
 ---
@@ -66,8 +66,33 @@ Run ALL or most of these agents at the same time:
 10. Task performance-oracle(PR content)
 11. Task devops-harmony-analyst(PR content)
 12. Task data-integrity-guardian(PR content)
+13. Task agent-native-reviewer(PR content) - Verify new features are agent-accessible
 
 </parallel_tasks>
+
+#### Conditional Agents (Run if applicable):
+
+<conditional_agents>
+
+These agents are run ONLY when the PR matches specific criteria. Check the PR files list to determine if they apply:
+
+**If PR contains database migrations (db/migrate/*.rb files) or data backfills:**
+
+14. Task data-migration-expert(PR content) - Validates ID mappings match production, checks for swapped values, verifies rollback safety
+15. Task deployment-verification-agent(PR content) - Creates Go/No-Go deployment checklist with SQL verification queries
+
+**When to run migration agents:**
+- PR includes files matching `db/migrate/*.rb`
+- PR modifies columns that store IDs, enums, or mappings
+- PR includes data backfill scripts or rake tasks
+- PR changes how data is read/written (e.g., changing from FK to string column)
+- PR title/body mentions: migration, backfill, data transformation, ID mapping
+
+**What these agents check:**
+- `data-migration-expert`: Verifies hard-coded mappings match production reality (prevents swapped IDs), checks for orphaned associations, validates dual-write patterns
+- `deployment-verification-agent`: Produces executable pre/post-deploy checklists with SQL queries, rollback procedures, and monitoring plans
+
+</conditional_agents>
 
 ### 4. Ultra-Thinking Deep Dive Phases
 
@@ -346,6 +371,7 @@ After creating all todo files, present comprehensive summary:
 - security-sentinel
 - performance-oracle
 - architecture-strategist
+- agent-native-reviewer
 - [other agents]
 
 ### Next Steps:
@@ -398,6 +424,89 @@ After creating all todo files, present comprehensive summary:
 - Documentation updates
 
 ```
+
+### 7. End-to-End Testing (Optional)
+
+<detect_project_type>
+
+**First, detect the project type from PR files:**
+
+| Indicator | Project Type |
+|-----------|--------------|
+| `*.xcodeproj`, `*.xcworkspace`, `Package.swift` (iOS) | iOS/macOS |
+| `Gemfile`, `package.json`, `app/views/*`, `*.html.*` | Web |
+| Both iOS files AND web files | Hybrid (test both) |
+
+</detect_project_type>
+
+<offer_testing>
+
+After presenting the Summary Report, offer appropriate testing based on project type:
+
+**For Web Projects:**
+```markdown
+**"Want to run Playwright browser tests on the affected pages?"**
+1. Yes - run `/playwright-test`
+2. No - skip
+```
+
+**For iOS Projects:**
+```markdown
+**"Want to run Xcode simulator tests on the app?"**
+1. Yes - run `/xcode-test`
+2. No - skip
+```
+
+**For Hybrid Projects (e.g., Rails + Hotwire Native):**
+```markdown
+**"Want to run end-to-end tests?"**
+1. Web only - run `/playwright-test`
+2. iOS only - run `/xcode-test`
+3. Both - run both commands
+4. No - skip
+```
+
+</offer_testing>
+
+#### If User Accepts Web Testing:
+
+Spawn a subagent to run Playwright tests (preserves main context):
+
+```
+Task general-purpose("Run /playwright-test for PR #[number]. Test all affected pages, check for console errors, handle failures by creating todos and fixing.")
+```
+
+The subagent will:
+1. Identify pages affected by the PR
+2. Navigate to each page and capture snapshots
+3. Check for console errors
+4. Test critical interactions
+5. Pause for human verification on OAuth/email/payment flows
+6. Create P1 todos for any failures
+7. Fix and retry until all tests pass
+
+**Standalone:** `/playwright-test [PR number]`
+
+#### If User Accepts iOS Testing:
+
+Spawn a subagent to run Xcode tests (preserves main context):
+
+```
+Task general-purpose("Run /xcode-test for scheme [name]. Build for simulator, install, launch, take screenshots, check for crashes.")
+```
+
+The subagent will:
+1. Verify XcodeBuildMCP is installed
+2. Discover project and schemes
+3. Build for iOS Simulator
+4. Install and launch app
+5. Take screenshots of key screens
+6. Capture console logs for errors
+7. Pause for human verification (Sign in with Apple, push, IAP)
+8. Create P1 todos for any failures
+9. Fix and retry until all tests pass
+
+**Standalone:** `/xcode-test [scheme]`
 
 ### Important: P1 Findings Block Merge
 

@@ -1,5 +1,5 @@
 ---
-name: work
+name: workflows:work
 description: Execute work plans efficiently while maintaining quality and finishing features
 argument-hint: "[plan file, specification, or todo file path]"
 ---
@@ -172,32 +172,35 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-2. **Capture Screenshots for UI Changes** (if applicable)
+2. **Capture and Upload Screenshots for UI Changes** (REQUIRED for any UI work)
 
-   For any design changes, new views, or UI modifications:
+   For **any** design changes, new views, or UI modifications, you MUST capture and upload screenshots:
 
+   **Step 1: Start dev server** (if not running)
    ```bash
-   # Start the dev server if not already running
    bin/dev  # Run in background
-
-   # Use Playwright to take screenshots at mobile width (320px)
-   # Navigate to relevant pages and capture before/after states
    ```
 
-   Using Playwright MCP tools:
-   - `browser_resize` to set mobile viewport (320x568 or similar)
+   **Step 2: Capture screenshots with Playwright MCP tools**
    - `browser_navigate` to go to affected pages
-   - `browser_snapshot` to check page state
+   - `browser_resize` to set viewport (desktop or mobile as needed)
+   - `browser_snapshot` to verify page state
    - `browser_take_screenshot` to capture images
 
-   Then upload screenshots using the imgup skill:
+   **Step 3: Upload using imgup skill**
    ```bash
-   # Upload to 0x0.st (recommended, no API key needed)
-   curl -F "file=@screenshot-before.png" https://0x0.st
-   curl -F "file=@screenshot-after.png" https://0x0.st
+   skill: imgup
+   # Then upload each screenshot:
+   imgup -h pixhost screenshot.png  # pixhost works without API key
+   # Alternative hosts: catbox, imagebin, beeimg
    ```
 
-   Include the URLs in your PR description.
+   **What to capture:**
+   - **New screens**: Screenshot of the new UI
+   - **Modified screens**: Before AND after screenshots
+   - **Design implementation**: Screenshot showing Figma design match
+
+   **IMPORTANT**: Always include uploaded image URLs in PR description. This provides visual context for reviewers and documents the change.
 
 3. **Create Pull Request**
 
