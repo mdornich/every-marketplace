@@ -98,6 +98,87 @@ Issue: Session ownership validation added but NO tests verify this fix.
 **Why:** CVSS 6.5 vulnerability fix without tests cannot be verified as working.
 ```
 
+## 🛡️ Security-Critical Code Test Verification (Added 2025-12-18)
+
+**CRITICAL RULE:** Security-critical code patterns MUST have corresponding test coverage, whether they are new features or fixes. Code that implements security controls without tests is INCOMPLETE.
+
+### Security-Critical Patterns to Verify
+
+When reviewing code, actively search for these patterns and verify tests exist:
+
+1. **Input Sanitization / Prompt Injection Protection**
+   - Regex filters, escape functions, sanitization methods
+   - Search: `grep -r "sanitize\|escape\|filter\|injection" --include="*.py"`
+   - **Required tests:** Malicious input patterns, bypass attempts, edge cases
+
+2. **Authentication / Authorization Checks**
+   - Session validation, ownership checks, permission guards
+   - Search: `grep -r "user_id.*==\|owner\|authorized" --include="*.py"`
+   - **Required tests:** Wrong user access (403), missing auth (401), valid access (200)
+
+3. **Rate Limiting Logic**
+   - Request counters, throttling, cooldown periods
+   - Search: `grep -r "rate_limit\|throttle\|max_requests" --include="*.py"`
+   - **Required tests:** Under limit, at limit, over limit scenarios
+
+4. **Cryptographic Operations**
+   - Hashing, encryption, token generation
+   - Search: `grep -r "hash\|encrypt\|decrypt\|hmac" --include="*.py"`
+   - **Required tests:** Known test vectors, error handling
+
+### Verification Process
+
+For EACH security-critical pattern found:
+
+1. **Identify the security code location**
+2. **Search for corresponding tests:**
+   ```bash
+   grep -r "test.*{function_name}" tests/
+   grep -r "{class_name}" tests/ | grep -i "security\|auth\|sanitize"
+   ```
+3. **If NO tests found → Flag as P0 BLOCKING:**
+   ```markdown
+   🔴 **P0 BLOCKING: Security-Critical Code Missing Tests**
+
+   Location: `{file}:{line_range}`
+   Pattern: {sanitization|auth|rate_limit|crypto}
+   Code: `{brief description of what it does}`
+
+   **No test coverage found.** Security-critical code without tests:
+   - Cannot be verified as working
+   - May silently regress
+   - Violates security testing requirements
+
+   **Required tests:**
+   - test_{pattern}_blocks_malicious_input
+   - test_{pattern}_allows_valid_input
+   - test_{pattern}_handles_edge_cases
+   ```
+
+### Real-World Example (2025-12-18)
+
+**What was missed:** Prompt injection sanitization in `llm_analyzer_service.py:230-263`
+- Code used regex to detect/neutralize injection attempts
+- Wrapped user input in XML tags for boundary isolation
+- **Had ZERO tests verifying these patterns worked**
+
+**What should have been flagged:**
+```markdown
+🔴 **P0 BLOCKING: Prompt Injection Sanitization Missing Tests**
+
+Location: `backend/app/services/fine_tune/llm_analyzer_service.py:230-263`
+Pattern: Input sanitization (prompt injection protection)
+Code: `_sanitize_user_input_for_prompt()` - removes control chars, detects injection patterns
+
+**No test coverage found.** Required tests:
+- test_sanitize_removes_control_characters
+- test_sanitize_neutralizes_ignore_instructions_attack
+- test_sanitize_wraps_in_xml_tags
+- test_sanitize_preserves_legitimate_input
+```
+
+This gap allowed security-critical code to ship without verification.
+
 ## Reporting Protocol
 
 Your security reports will include:
