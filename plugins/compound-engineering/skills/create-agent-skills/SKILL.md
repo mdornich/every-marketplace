@@ -1,6 +1,6 @@
 ---
 name: create-agent-skills
-description: Expert guidance for creating, writing, building, and refining Claude Code Skills. Use when working with SKILL.md files, authoring new skills, improving existing skills, or understanding skill structure and best practices.
+description: This skill provides expert guidance for creating, writing, building, and refining Claude Code Skills. It should be used when working with SKILL.md files, authoring new skills, improving existing skills, or understanding skill structure and best practices.
 ---
 
 <essential_principles>
@@ -140,11 +140,11 @@ scripts/:
 
 All in `references/`:
 
-**Structure:** recommended-structure.md, skill-structure.md
-**Principles:** core-principles.md, be-clear-and-direct.md, use-xml-tags.md
-**Patterns:** common-patterns.md, workflows-and-validation.md
-**Assets:** using-templates.md, using-scripts.md
-**Advanced:** executable-code.md, api-security.md, iteration-and-testing.md
+- **Structure:** [recommended-structure.md](./references/recommended-structure.md), [skill-structure.md](./references/skill-structure.md)
+- **Principles:** [core-principles.md](./references/core-principles.md), [be-clear-and-direct.md](./references/be-clear-and-direct.md), [use-xml-tags.md](./references/use-xml-tags.md)
+- **Patterns:** [common-patterns.md](./references/common-patterns.md), [workflows-and-validation.md](./references/workflows-and-validation.md)
+- **Assets:** [using-templates.md](./references/using-templates.md), [using-scripts.md](./references/using-scripts.md)
+- **Advanced:** [executable-code.md](./references/executable-code.md), [api-security.md](./references/api-security.md), [iteration-and-testing.md](./references/iteration-and-testing.md)
 </reference_index>
 
 <workflows_index>

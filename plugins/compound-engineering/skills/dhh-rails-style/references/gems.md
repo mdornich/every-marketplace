@@ -89,7 +89,106 @@ Why: REST is sufficient when you control both ends. GraphQL complexity not justi
 factory_bot → Fixtures
 ```
 Why: Fixtures are simpler, faster, and encourage thinking about data relationships upfront.
+
+**Service Objects:**
+```
+Interactor, Trailblazer → Fat models
+```
+Why: Business logic stays in models. Methods like `card.close` instead of `CardCloser.call(card)`.
+
+**Form Objects:**
+```
+Reform, dry-validation → params.expect + model validations
+```
+Why: Rails 7.1's `params.expect` is clean enough. Contextual validations on model.
+
+**Decorators:**
+```
+Draper → View helpers + partials
+```
+Why: Helpers and partials are simpler. No decorator indirection.
+
+**CSS:**
+```
+Tailwind, Sass → Native CSS
+```
+Why: Modern CSS has nesting, variables, layers. No build step needed.
+
+**Frontend:**
+```
+React, Vue, SPAs → Turbo + Stimulus
+```
+Why: Server-rendered HTML with sprinkles of JS. SPA complexity not justified.
+
+**Testing:**
+```
+RSpec → Minitest
+```
+Why: Simpler, faster boot, less DSL magic, ships with Rails.
 </what_they_avoid>
+
+<testing_philosophy>
+## Testing Philosophy
+
+**Minitest** - simpler, faster:
+```ruby
+class CardTest < ActiveSupport::TestCase
+  test "closing creates closure" do
+    card = cards(:one)
+    assert_difference -> { Card::Closure.count } do
+      card.close
+    end
+    assert card.closed?
+  end
+end
+```
+
+**Fixtures** - loaded once, deterministic:
+```yaml
+# test/fixtures/cards.yml
+open_card:
+  title: Open Card
+  board: main
+  creator: alice
+
+closed_card:
+  title: Closed Card
+  board: main
+  creator: bob
+```
+
+**Dynamic timestamps** with ERB:
+```yaml
+recent:
+  title: Recent
+  created_at: <%= 1.hour.ago %>
+
+old:
+  title: Old
+  created_at: <%= 1.month.ago %>
+```
+
+**Time travel** for time-dependent tests:
+```ruby
+test "expires after 15 minutes" do
+  magic_link = MagicLink.create!(user: users(:alice))
+
+  travel 16.minutes
+
+  assert magic_link.expired?
+end
+```
+
+**VCR** for external APIs:
+```ruby
+VCR.use_cassette("stripe/charge") do
+  charge = Stripe::Charge.create(amount: 1000)
+  assert charge.paid
+end
+```
+
+**Tests ship with features** - same commit, not before or after.
+</testing_philosophy>
 
 <decision_framework>
 ## Decision Framework

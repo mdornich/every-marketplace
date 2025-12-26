@@ -212,3 +212,148 @@ card.close
 card.ungild
 ```
 </verbs_predicates>
+
+<validation_philosophy>
+## Validation Philosophy
+
+Minimal validations on models. Use contextual validations on form/operation objects:
+
+```ruby
+# Model - minimal
+class User < ApplicationRecord
+  validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+end
+
+# Form object - contextual
+class Signup
+  include ActiveModel::Model
+
+  attr_accessor :email, :name, :terms_accepted
+
+  validates :email, :name, presence: true
+  validates :terms_accepted, acceptance: true
+
+  def save
+    return false unless valid?
+    User.create!(email: email, name: name)
+  end
+end
+```
+
+**Prefer database constraints** over model validations for data integrity:
+```ruby
+# migration
+add_index :users, :email, unique: true
+add_foreign_key :cards, :boards
+```
+</validation_philosophy>
+
+<error_handling>
+## Let It Crash Philosophy
+
+Use bang methods that raise exceptions on failure:
+
+```ruby
+# Preferred - raises on failure
+@card = Card.create!(card_params)
+@card.update!(title: new_title)
+@comment.destroy!
+
+# Avoid - silent failures
+@card = Card.create(card_params)  # returns false on failure
+if @card.save
+  # ...
+end
+```
+
+Let errors propagate naturally. Rails handles ActiveRecord::RecordInvalid with 422 responses.
+</error_handling>
+
+<default_values>
+## Default Values with Lambdas
+
+Use lambda defaults for associations with Current:
+
+```ruby
+class Card < ApplicationRecord
+  belongs_to :creator, class_name: "User", default: -> { Current.user }
+  belongs_to :account, default: -> { Current.account }
+end
+
+class Comment < ApplicationRecord
+  belongs_to :commenter, class_name: "User", default: -> { Current.user }
+end
+```
+
+Lambdas ensure dynamic resolution at creation time.
+</default_values>
+
+<rails_71_patterns>
+## Rails 7.1+ Model Patterns
+
+**Normalizes** - clean data before validation:
+```ruby
+class User < ApplicationRecord
+  normalizes :email, with: ->(email) { email.strip.downcase }
+  normalizes :phone, with: ->(phone) { phone.gsub(/\D/, "") }
+end
+```
+
+**Delegated Types** - replace polymorphic associations:
+```ruby
+class Message < ApplicationRecord
+  delegated_type :messageable, types: %w[Comment Reply Announcement]
+end
+
+# Now you get:
+message.comment?        # true if Comment
+message.comment         # returns the Comment
+Message.comments        # scope for Comment messages
+```
+
+**Store Accessor** - structured JSON storage:
+```ruby
+class User < ApplicationRecord
+  store :settings, accessors: [:theme, :notifications_enabled], coder: JSON
+end
+
+user.theme = "dark"
+user.notifications_enabled = true
+```
+</rails_71_patterns>
+
+<concern_guidelines>
+## Concern Guidelines
+
+- **50-150 lines** per concern (most are ~100)
+- **Cohesive** - related functionality only
+- **Named for capabilities** - `Closeable`, `Watchable`, not `CardHelpers`
+- **Self-contained** - associations, scopes, methods together
+- **Not for mere organization** - create when genuine reuse needed
+
+**Touch chains** for cache invalidation:
+```ruby
+class Comment < ApplicationRecord
+  belongs_to :card, touch: true
+end
+
+class Card < ApplicationRecord
+  belongs_to :board, touch: true
+end
+```
+
+When comment updates, card's `updated_at` changes, which cascades to board.
+
+**Transaction wrapping** for related updates:
+```ruby
+class Card < ApplicationRecord
+  def close(creator: Current.user)
+    transaction do
+      create_closure!(creator: creator)
+      record_event(:closed)
+      notify_watchers_later
+    end
+  end
+end
+```
+</concern_guidelines>

@@ -1,6 +1,6 @@
 ---
 name: dhh-rails-style
-description: Write Ruby and Rails code in DHH's distinctive 37signals style. Use this skill when writing Ruby code, Rails applications, creating models, controllers, or any Ruby file. Triggers on Ruby/Rails code generation, refactoring requests, code review, or when the user mentions DHH, 37signals, Basecamp, HEY, or Campfire style. Embodies REST purity, fat models, thin controllers, Current attributes, Hotwire patterns, and the "clarity over cleverness" philosophy.
+description: This skill should be used when writing Ruby and Rails code in DHH's distinctive 37signals style. It applies when writing Ruby code, Rails applications, creating models, controllers, or any Ruby file. Triggers on Ruby/Rails code generation, refactoring requests, code review, or when the user mentions DHH, 37signals, Basecamp, HEY, or Campfire style. Embodies REST purity, fat models, thin controllers, Current attributes, Hotwire patterns, and the "clarity over cleverness" philosophy.
 ---
 
 <objective>
@@ -45,10 +45,10 @@ What are you working on?
 <routing>
 | Response | Reference to Read |
 |----------|-------------------|
-| 1, "controller" | references/controllers.md |
-| 2, "model" | references/models.md |
-| 3, "view", "frontend", "turbo", "stimulus", "css" | references/frontend.md |
-| 4, "architecture", "routing", "auth", "job" | references/architecture.md |
+| 1, "controller" | [controllers.md](./references/controllers.md) |
+| 2, "model" | [models.md](./references/models.md) |
+| 3, "view", "frontend", "turbo", "stimulus", "css" | [frontend.md](./references/frontend.md) |
+| 4, "architecture", "routing", "auth", "job" | [architecture.md](./references/architecture.md) |
 | 5, "review" | Read all references, then review code |
 | 6, general task | Read relevant references based on context |
 
@@ -89,11 +89,11 @@ All detailed patterns in `references/`:
 
 | File | Topics |
 |------|--------|
-| controllers.md | REST mapping, concerns, Turbo responses, API patterns |
-| models.md | Concerns, state records, callbacks, scopes, POROs |
-| frontend.md | Turbo, Stimulus, CSS architecture, view patterns |
-| architecture.md | Routing, auth, jobs, caching, multi-tenancy, config |
-| gems.md | What they use vs avoid, and why |
+| [controllers.md](./references/controllers.md) | REST mapping, concerns, Turbo responses, API patterns |
+| [models.md](./references/models.md) | Concerns, state records, callbacks, scopes, POROs |
+| [frontend.md](./references/frontend.md) | Turbo, Stimulus, CSS architecture, view patterns |
+| [architecture.md](./references/architecture.md) | Routing, auth, jobs, caching, multi-tenancy, config |
+| [gems.md](./references/gems.md) | What they use vs avoid, and why |
 </reference_index>
 
 <success_criteria>

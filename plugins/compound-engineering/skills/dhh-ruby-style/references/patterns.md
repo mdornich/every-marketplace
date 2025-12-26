@@ -619,6 +619,137 @@ EXPOSE 80 443
 CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
 ```
 
+## Development Philosophy
+
+### Ship, Validate, Refine
+
+```ruby
+# 1. Merge prototype-quality code to test real usage
+# 2. Iterate based on real feedback
+# 3. Polish what works, remove what doesn't
+```
+
+DHH merges features early to validate in production. Perfect code that no one uses is worse than rough code that gets feedback.
+
+### Fix Root Causes
+
+```ruby
+# ✅ Prevent race conditions at the source
+config.active_job.enqueue_after_transaction_commit = true
+
+# ❌ Bandaid fix with retries
+retry_on ActiveRecord::RecordNotFound, wait: 1.second
+```
+
+Address underlying issues rather than symptoms.
+
+### Vanilla Rails Over Abstractions
+
+```ruby
+# ✅ Direct ActiveRecord
+@card.comments.create!(comment_params)
+
+# ❌ Service layer indirection
+CreateCommentService.call(@card, comment_params)
+```
+
+Use Rails conventions. Only abstract when genuine pain emerges.
+
+## Rails 7.1+ Idioms
+
+### params.expect (PR #120)
+
+```ruby
+# ✅ Rails 7.1+ style
+def card_params
+  params.expect(card: [:title, :description, tags: []])
+end
+
+# Returns 400 Bad Request if structure invalid
+
+# Old style
+def card_params
+  params.require(:card).permit(:title, :description, tags: [])
+end
+```
+
+### StringInquirer (PR #425)
+
+```ruby
+# ✅ Readable predicates
+event.action.inquiry.completed?
+event.action.inquiry.pending?
+
+# Usage
+case
+when event.action.inquiry.completed?
+  send_notification
+when event.action.inquiry.failed?
+  send_alert
+end
+
+# Old style
+event.action == "completed"
+```
+
+### Positive Naming
+
+```ruby
+# ✅ Positive names
+scope :active, -> { where(active: true) }
+scope :visible, -> { where(visible: true) }
+scope :published, -> { where.not(published_at: nil) }
+
+# ❌ Negative names
+scope :not_deleted, -> { ... }  # Use :active
+scope :non_hidden, -> { ... }   # Use :visible
+scope :is_not_draft, -> { ... } # Use :published
+```
+
+## Extraction Guidelines
+
+### Rule of Three
+
+```ruby
+# First time: Just do it inline
+def process
+  # inline logic
+end
+
+# Second time: Still inline, note the duplication
+def process_again
+  # same logic
+end
+
+# Third time: NOW extract
+module Processing
+  def shared_logic
+    # extracted
+  end
+end
+```
+
+Wait for genuine pain before extracting.
+
+### Start in Controller, Extract When Complex
+
+```ruby
+# Phase 1: Logic in controller
+def index
+  @cards = @board.cards.where(status: params[:status])
+end
+
+# Phase 2: Move to model scope
+def index
+  @cards = @board.cards.by_status(params[:status])
+end
+
+# Phase 3: Extract concern if reused
+def index
+  @cards = @board.cards.filtered(params)
+end
+```
+
 ## Anti-Patterns to Avoid
 
 ### Don't Add Service Objects for Simple Cases

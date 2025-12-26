@@ -62,7 +62,146 @@ end
 **FilterScoped** - handles complex filtering
 **TurboFlash** - flash messages via Turbo Stream
 **ViewTransitions** - disables on page refresh
+**BlockSearchEngineIndexing** - sets X-Robots-Tag header
+**RequestForgeryProtection** - Sec-Fetch-Site CSRF (modern browsers)
 </controller_concerns>
+
+<authorization_patterns>
+## Authorization Patterns
+
+Controllers check permissions via before_action, models define what permissions mean:
+
+```ruby
+# Controller concern
+module Authorization
+  extend ActiveSupport::Concern
+
+  private
+    def ensure_can_administer
+      head :forbidden unless Current.user.admin?
+    end
+
+    def ensure_is_staff_member
+      head :forbidden unless Current.user.staff?
+    end
+end
+
+# Usage
+class BoardsController < ApplicationController
+  before_action :ensure_can_administer, only: [:destroy]
+end
+```
+
+**Model-level authorization:**
+```ruby
+class Board < ApplicationRecord
+  def editable_by?(user)
+    user.admin? || user == creator
+  end
+
+  def publishable_by?(user)
+    editable_by?(user) && !published?
+  end
+end
+```
+
+Keep authorization simple, readable, colocated with domain.
+</authorization_patterns>
+
+<security_concerns>
+## Security Concerns
+
+**Sec-Fetch-Site CSRF Protection:**
+Modern browsers send Sec-Fetch-Site header. Use it for defense in depth:
+
+```ruby
+module RequestForgeryProtection
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :verify_request_origin
+  end
+
+  private
+    def verify_request_origin
+      return if request.get? || request.head?
+      return if %w[same-origin same-site].include?(
+        request.headers["Sec-Fetch-Site"]&.downcase
+      )
+      # Fall back to token verification for older browsers
+      verify_authenticity_token
+    end
+end
+```
+
+**Rate Limiting (Rails 8+):**
+```ruby
+class MagicLinksController < ApplicationController
+  rate_limit to: 10, within: 15.minutes, only: :create
+end
+```
+
+Apply to: auth endpoints, email sending, external API calls, resource creation.
+</security_concerns>
+
+<request_context>
+## Request Context Concerns
+
+**CurrentRequest** - populates Current with HTTP metadata:
+```ruby
+module CurrentRequest
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :set_current_request
+  end
+
+  private
+    def set_current_request
+      Current.request_id = request.request_id
+      Current.user_agent = request.user_agent
+      Current.ip_address = request.remote_ip
+      Current.referrer = request.referrer
+    end
+end
+```
+
+**CurrentTimezone** - wraps requests in user's timezone:
+```ruby
+module CurrentTimezone
+  extend ActiveSupport::Concern
+
+  included do
+    around_action :set_timezone
+    helper_method :timezone_from_cookie
+  end
+
+  private
+    def set_timezone
+      Time.use_zone(timezone_from_cookie) { yield }
+    end
+
+    def timezone_from_cookie
+      cookies[:timezone] || "UTC"
+    end
+end
+```
+
+**SetPlatform** - detects mobile/desktop:
+```ruby
+module SetPlatform
+  extend ActiveSupport::Concern
+
+  included do
+    helper_method :platform
+  end
+
+  def platform
+    @platform ||= request.user_agent&.match?(/Mobile|Android/) ? :mobile : :desktop
+  end
+end
+```
+</request_context>
 
 <turbo_responses>
 ## Turbo Stream Responses

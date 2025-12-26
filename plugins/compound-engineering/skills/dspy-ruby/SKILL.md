@@ -570,15 +570,15 @@ This skill includes comprehensive reference materials and templates:
 
 ### References (load as needed for detailed information)
 
-- **`references/core-concepts.md`**: Complete guide to signatures, modules, predictors, multimodal support, and best practices
-- **`references/providers.md`**: All LLM provider configurations, compatibility matrix, cost optimization, and troubleshooting
-- **`references/optimization.md`**: Testing patterns, optimization techniques, observability setup, and monitoring
+- [core-concepts.md](./references/core-concepts.md): Complete guide to signatures, modules, predictors, multimodal support, and best practices
+- [providers.md](./references/providers.md): All LLM provider configurations, compatibility matrix, cost optimization, and troubleshooting
+- [optimization.md](./references/optimization.md): Testing patterns, optimization techniques, observability setup, and monitoring
 
 ### Assets (templates for quick starts)
 
-- **`assets/signature-template.rb`**: Examples of signatures including basic, vision, sentiment analysis, and code generation
-- **`assets/module-template.rb`**: Module patterns including pipelines, agents, error handling, caching, and state management
-- **`assets/config-template.rb`**: Configuration examples for all providers, environments, observability, and production patterns
+- [signature-template.rb](./assets/signature-template.rb): Examples of signatures including basic, vision, sentiment analysis, and code generation
+- [module-template.rb](./assets/module-template.rb): Module patterns including pipelines, agents, error handling, caching, and state management
+- [config-template.rb](./assets/config-template.rb): Configuration examples for all providers, environments, observability, and production patterns
 
 ## When to Use This Skill
 

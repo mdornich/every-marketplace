@@ -19,20 +19,99 @@ Rails.application.routes.draw do
 end
 ```
 
-**Multi-tenancy** via URL (not subdomain):
+**Verb-to-noun conversion:**
+| Action | Resource |
+|--------|----------|
+| close a card | `card.closure` |
+| watch a board | `board.watching` |
+| mark as golden | `card.goldness` |
+| archive a card | `card.archival` |
+
+**Shallow nesting** - avoid deep URLs:
 ```ruby
-# /{account_id}/boards/...
-scope "/:account_id" do
-  resources :boards
+resources :boards do
+  resources :cards, shallow: true  # /boards/:id/cards, but /cards/:id
 end
 ```
 
-Benefits:
-- No subdomain DNS complexity
-- Deep links work naturally
-- Middleware extracts account_id, moves to SCRIPT_NAME
-- `Current.account` available everywhere
+**Singular resources** for one-per-parent:
+```ruby
+resource :closure   # not resources
+resource :goldness
+```
+
+**Resolve for URL generation:**
+```ruby
+# config/routes.rb
+resolve("Comment") { |comment| [comment.card, anchor: dom_id(comment)] }
+
+# Now url_for(@comment) works correctly
+```
 </routing>
+
+<multi_tenancy>
+## Multi-Tenancy (Path-Based)
+
+**Middleware extracts tenant** from URL prefix:
+
+```ruby
+# lib/tenant_extractor.rb
+class TenantExtractor
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    path = env["PATH_INFO"]
+    if match = path.match(%r{^/(\d+)(/.*)?$})
+      env["SCRIPT_NAME"] = "/#{match[1]}"
+      env["PATH_INFO"] = match[2] || "/"
+    end
+    @app.call(env)
+  end
+end
+```
+
+**Cookie scoping** per tenant:
+```ruby
+# Cookies scoped to tenant path
+cookies.signed[:session_id] = {
+  value: session.id,
+  path: "/#{Current.account.id}"
+}
+```
+
+**Background job context** - serialize tenant:
+```ruby
+class ApplicationJob < ActiveJob::Base
+  around_perform do |job, block|
+    Current.set(account: job.arguments.first.account) { block.call }
+  end
+end
+```
+
+**Recurring jobs** must iterate all tenants:
+```ruby
+class DailyDigestJob < ApplicationJob
+  def perform
+    Account.find_each do |account|
+      Current.set(account: account) do
+        send_digest_for(account)
+      end
+    end
+  end
+end
+```
+
+**Controller security** - always scope through tenant:
+```ruby
+# Good - scoped through user's accessible records
+@card = Current.user.accessible_cards.find(params[:id])
+
+# Avoid - direct lookup
+@card = Card.find(params[:id])
+```
+</multi_tenancy>
 
 <authentication>
 ## Authentication
@@ -130,7 +209,97 @@ end
 - No Redis required
 - Same transactional guarantees as your data
 - Simpler infrastructure
+
+**Transaction safety:**
+```ruby
+# config/application.rb
+config.active_job.enqueue_after_transaction_commit = true
+```
+
+**Error handling** by type:
+```ruby
+class DeliveryJob < ApplicationJob
+  # Transient errors - retry with backoff
+  retry_on Net::OpenTimeout, Net::ReadTimeout,
+           Resolv::ResolvError,
+           wait: :polynomially_longer
+
+  # Permanent errors - log and discard
+  discard_on Net::SMTPSyntaxError do |job, error|
+    Sentry.capture_exception(error, level: :info)
+  end
+end
+```
+
+**Batch processing** with continuable:
+```ruby
+class ProcessCardsJob < ApplicationJob
+  include ActiveJob::Continuable
+
+  def perform
+    Card.in_batches.each_record do |card|
+      checkpoint!  # Resume from here if interrupted
+      process(card)
+    end
+  end
+end
+```
 </background_jobs>
+
+<database_patterns>
+## Database Patterns
+
+**UUIDs as primary keys** (time-sortable UUIDv7):
+```ruby
+# migration
+create_table :cards, id: :uuid do |t|
+  t.references :board, type: :uuid, foreign_key: true
+end
+```
+
+Benefits: No ID enumeration, distributed-friendly, client-side generation.
+
+**State as records** (not booleans):
+```ruby
+# Instead of closed: boolean
+class Card::Closure < ApplicationRecord
+  belongs_to :card
+  belongs_to :creator, class_name: "User"
+end
+
+# Queries become joins
+Card.joins(:closure)          # closed
+Card.where.missing(:closure)  # open
+```
+
+**Hard deletes** - no soft delete:
+```ruby
+# Just destroy
+card.destroy!
+
+# Use events for history
+card.record_event(:deleted, by: Current.user)
+```
+
+Simplifies queries, uses event logs for auditing.
+
+**Counter caches** for performance:
+```ruby
+class Comment < ApplicationRecord
+  belongs_to :card, counter_cache: true
+end
+
+# card.comments_count available without query
+```
+
+**Account scoping** on every table:
+```ruby
+class Card < ApplicationRecord
+  belongs_to :account
+  default_scope { where(account: Current.account) }
+end
+```
+</database_patterns>
 
 <current_attributes>
 ## Current Attributes
@@ -339,3 +508,146 @@ end
 
 **Webhooks driven by events** - events are the canonical source.
 </events>
+
+<email_patterns>
+## Email Patterns
+
+**Multi-tenant URL helpers:**
+```ruby
+class ApplicationMailer < ActionMailer::Base
+  def default_url_options
+    options = super
+    if Current.account
+      options[:script_name] = "/#{Current.account.id}"
+    end
+    options
+  end
+end
+```
+
+**Timezone-aware delivery:**
+```ruby
+class NotificationMailer < ApplicationMailer
+  def daily_digest(user)
+    Time.use_zone(user.timezone) do
+      @user = user
+      @digest = user.digest_for_today
+      mail(to: user.email, subject: "Daily Digest")
+    end
+  end
+end
+```
+
+**Batch delivery:**
+```ruby
+emails = users.map { |user| NotificationMailer.digest(user) }
+ActiveJob.perform_all_later(emails.map(&:deliver_later))
+```
+
+**One-click unsubscribe (RFC 8058):**
+```ruby
+class ApplicationMailer < ActionMailer::Base
+  after_action :set_unsubscribe_headers
+
+  private
+    def set_unsubscribe_headers
+      headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+      headers["List-Unsubscribe"] = "<#{unsubscribe_url}>"
+    end
+end
+```
+</email_patterns>
+
+<security_patterns>
+## Security Patterns
+
+**XSS prevention** - escape in helpers:
+```ruby
+def formatted_content(text)
+  # Escape first, then mark safe
+  simple_format(h(text)).html_safe
+end
+```
+
+**SSRF protection:**
+```ruby
+# Resolve DNS once, pin the IP
+def fetch_safely(url)
+  uri = URI.parse(url)
+  ip = Resolv.getaddress(uri.host)
+
+  # Block private networks
+  raise "Private IP" if private_ip?(ip)
+
+  # Use pinned IP for request
+  Net::HTTP.start(uri.host, uri.port, ipaddr: ip) { |http| ... }
+end
+
+def private_ip?(ip)
+  ip.start_with?("127.", "10.", "192.168.") ||
+    ip.match?(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)
+end
+```
+
+**Content Security Policy:**
+```ruby
+# config/initializers/content_security_policy.rb
+Rails.application.configure do
+  config.content_security_policy do |policy|
+    policy.default_src :self
+    policy.script_src :self
+    policy.style_src :self, :unsafe_inline
+    policy.base_uri :none
+    policy.form_action :self
+    policy.frame_ancestors :self
+  end
+end
+```
+
+**ActionText sanitization:**
+```ruby
+# config/initializers/action_text.rb
+Rails.application.config.after_initialize do
+  ActionText::ContentHelper.allowed_tags = %w[
+    strong em a ul ol li p br h1 h2 h3 h4 blockquote
+  ]
+end
+```
+</security_patterns>
+
+<active_storage>
+## Active Storage Patterns
+
+**Variant preprocessing:**
+```ruby
+class User < ApplicationRecord
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_limit: [100, 100], preprocessed: true
+    attachable.variant :medium, resize_to_limit: [300, 300], preprocessed: true
+  end
+end
+```
+
+**Direct upload expiry** - extend for slow connections:
+```ruby
+# config/initializers/active_storage.rb
+Rails.application.config.active_storage.service_urls_expire_in = 48.hours
+```
+
+**Avatar optimization** - redirect to blob:
+```ruby
+def show
+  expires_in 1.year, public: true
+  redirect_to @user.avatar.variant(:thumb).processed.url, allow_other_host: true
+end
+```
+
+**Mirror service** for migrations:
+```yaml
+# config/storage.yml
+production:
+  service: Mirror
+  primary: amazon
+  mirrors: [google]
+```
+</active_storage>
